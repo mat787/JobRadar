@@ -1,58 +1,62 @@
-from httphandler import httpHandler
-
-from bs4 import BeautifulSoup
 import json
+from bs4 import BeautifulSoup
 
-moj_klient = httpHandler('https://it.pracuj.pl/praca')
-status, html_text = moj_klient.send_request()
 
-if status == 200:
-    soup = BeautifulSoup(html_text, 'html.parser')
-    script_tag = soup.find('script', id='__NEXT_DATA__')
+from .httphandler import HttpHandler
+from .jobOffer import JobOffer
 
-    if script_tag:
-        dane_slownik = json.loads(script_tag.text)
-        queries = dane_slownik['props']['pageProps']['dehydratedState']['queries']
 
-        with open('data.json', 'w', encoding='utf-8') as file:
-            json.dump(queries, file, indent=4)
+class PracujScraper:
 
-        for query in queries:
+    def __init__(self, url):
+        self.url = url
+        self.http_client = HttpHandler(self.url)
 
-            data_dict = query.get('state', {}).get('data', {})
+    def _fetch_html(self):
+        """Pobiera kod HTML i obsługuje błędy HTTP."""
+        status, html_text = self.http_client.send_request()
+        if status != 200:
+            raise ConnectionError(f"Błąd HTTP: {status}")
+        return html_text
 
-            # Sprawdzamy, czy to jest TA paczka (czy ma klucz groupedOffers)
-            if isinstance(data_dict, dict) and 'groupedOffers' in data_dict:
-                offers = data_dict['groupedOffers']
-                print(f"BINGO! Znaleziono {len(offers)} ofert na tej stronie.")
+    def _extract_json_data(self, html_text):
+        """Wydobywa surowy słownik JSON z kodu strony."""
+        soup = BeautifulSoup(html_text, 'html.parser')
+        script_tag = soup.find('script', id='__NEXT_DATA__')
 
-                for offer in offers:
-                    print("Technologie:", offer.get('technologies'))
-                    print("Stanowisko:", offer.get('jobTitle'))
-                    print("Firma:", offer.get('companyName'))
+        if not script_tag:
+            raise ValueError("Nie znaleziono tagu '__NEXT_DATA__'.")
 
-                    # --- BEZPIECZNE WYCIĄGANIE Z LISTY (ZAGNIEŻDŻENIE) ---
-                    # .get('offers', []) gwarantuje, że jeśli klucza zabraknie, otrzymamy pustą listę zamiast błędu
-                    sub_oferty = offer.get('offers', [])
+        return json.loads(script_tag.text)
 
-                    # Sprawdzamy, czy lista istnieje i czy ma przynajmniej 1 element
-                    if sub_oferty and len(sub_oferty) > 0:
-                        pierwsza_sub_oferta = sub_oferty[0]
-                        print("Partition ID:", pierwsza_sub_oferta.get('partitionId'))
-                        print("Link do oferty:", pierwsza_sub_oferta.get('offerAbsoluteUri'))
-                    else:
-                        print("Partition ID: Brak")
-                        print("Link do oferty: Brak")
-                    # ---------------------------------------------------
+    def get_offers(self):
+        """Główna metoda zwracająca listę obiektów JobOffer."""
+        try:
+            html_text = self._fetch_html()
+            json_data = self._extract_json_data(html_text)
 
-                    print("Widełki:", offer.get('salaryDisplayText'))
-                    print("Poziom:", offer.get('positionLevels'))
-                    print("Umowa:", offer.get('typesOfContract'))
+            queries = json_data.get('props', {}).get('pageProps', {}).get('dehydratedState', {}).get('queries', [])
+            extracted_offers = []
 
-                    print("-" * 50)  # Ładna kreska oddzielająca oferty w konsoli
-                    break  # Na razie przerywamy po pierwszej, żeby sprawdzić, czy działa
-            print("Udało się! Oto klucze z Pracuj.pl:", dane_slownik.keys())
-        else:
-            print("Nie znaleziono tagu. Pracuj.pl mogło zmienić kod strony.")
-    else:
-        print(f"Błąd połączenia. Serwer zwrócił status: {status}")
+            for query in queries:
+                data_dict = query.get('state', {}).get('data', {})
+
+                # Szukamy właściwej sekcji z ofertami
+                if isinstance(data_dict, dict) and 'groupedOffers' in data_dict:
+                    raw_offers = data_dict['groupedOffers']
+
+                    for offer_data in raw_offers:
+                        sub_offers = offer_data.get('offers', [])
+                        first_sub = sub_offers[0] if sub_offers else {}
+
+                        # Tworzymy konkretny obiekt i dodajemy do listy
+                        offer_obj = JobOffer(offer_data, first_sub)
+                        extracted_offers.append(offer_obj)
+
+                    break
+
+            return extracted_offers
+
+        except Exception as e:
+            print(f"Scrapowanie przerwane z powodu błędu: {e}")
+            return []

@@ -1,14 +1,13 @@
-import httpx
 import requests
 from curl_cffi import requests
 
-class httpHandler:
+class HttpHandler:
     def __init__(self, url):
         self.url = url
 
     def send_request(self):
         r = requests.get(
-            'https://it.pracuj.pl/praca',
+            self.url,
             impersonate="chrome120",
             headers={
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
@@ -20,8 +19,3 @@ class httpHandler:
         return r.status_code, r.text
 
 
-
-if __name__ == '__main__':
-    pracuj = httpHandler('https://it.pracuj.pl/praca')
-    status, tekst = pracuj.send_request()
-    print("Test scrapera:", status)

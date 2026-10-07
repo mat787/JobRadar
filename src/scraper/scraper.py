@@ -41,7 +41,6 @@ class PracujScraper:
             for query in queries:
                 data_dict = query.get('state', {}).get('data', {})
 
-                # Szukamy właściwej sekcji z ofertami
                 if isinstance(data_dict, dict) and 'groupedOffers' in data_dict:
                     raw_offers = data_dict['groupedOffers']
 
@@ -49,7 +48,6 @@ class PracujScraper:
                         sub_offers = offer_data.get('offers', [])
                         first_sub = sub_offers[0] if sub_offers else {}
 
-                        # Tworzymy konkretny obiekt i dodajemy do listy
                         offer_obj = JobOffer(offer_data, first_sub)
                         extracted_offers.append(offer_obj)
 

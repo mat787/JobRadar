@@ -5,8 +5,6 @@ from scraper.scraper import PracujScraper
 
 
 def main():
-    print("--- Start systemu JobRadar ---")
-    print("Pobieram dane ze strony Pracuj.pl...\n")
 
     wszystkie_oferty = []
 
@@ -32,6 +30,8 @@ def main():
             time.sleep(przerwa)
 
     print(f"Łącznie zebrano: {len(wszystkie_oferty)} ofert.")
+
+    for oferta in wszystkie_oferty:
 
 
 

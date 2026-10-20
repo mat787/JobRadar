@@ -1,4 +1,32 @@
+# Dane osobowe / pliki użytkownika
 *.pdf
+
+# Sekrety
 .env
+.env.*
+!.env.example
+
+# Dane bazy Postgresa (volume z docker-compose)
+moje_dane_bazy/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+dist/
+build/
+
+# Środowisko wirtualne
 .venv/
+venv/
+
+# IDE / system
 .idea/
+.vscode/
+.DS_Store
+Thumbs.db

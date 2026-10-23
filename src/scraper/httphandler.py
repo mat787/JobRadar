@@ -1,21 +1,17 @@
-import requests
 from curl_cffi import requests
 
-class HttpHandler:
-    def __init__(self, url):
-        self.url = url
 
-    def send_request(self):
+class HttpHandler:
+    """Wysyła zapytania HTTP, podszywając się pod przeglądarkę Chrome."""
+
+    def __init__(self, timeout=30):
+        self.timeout = timeout
+
+    def send_request(self, url):
         r = requests.get(
-            self.url,
+            url,
             impersonate="chrome120",
-            headers={
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-                "Accept-Language": "pl-PL,pl;q=0.9,en;q=0.8",
-                "Accept-Encoding": "gzip, deflate, br",
-            }
+            timeout=self.timeout,
+            headers={"Accept-Language": "pl-PL,pl;q=0.9,en;q=0.8"},
         )
         return r.status_code, r.text
-
-

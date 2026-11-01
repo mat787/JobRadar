@@ -1,0 +1,35 @@
+# Dane osobowe / pliki użytkownika
+*.pdf
+
+.env
+.env.*
+!.env.example
+
+# Dane bazy
+moje_dane_bazy/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+dist/
+build/
+
+.venv/
+venv/
+
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+logs/
+
+.claude/
+src/scraper/data.json
+design strony.png

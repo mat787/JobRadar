@@ -1,0 +1,12 @@
+httpx
+beautifulsoup4
+requests
+curl-cffi
+psycopg
+PyPDF2
+python-dotenv
+pgvector
+fastapi
+uvicorn[standard]
+openai
+numpy

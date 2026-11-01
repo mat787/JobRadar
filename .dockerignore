@@ -1,0 +1,10 @@
+.env
+.venv/
+.git/
+.idea/
+moje_dane_bazy/
+logs/
+tests/
+playground/
+*.pdf
+**/__pycache__/

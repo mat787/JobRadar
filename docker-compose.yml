@@ -1,0 +1,30 @@
+services:
+  db:
+    image: pgvector/pgvector:pg15-trixie
+    restart: always
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - ./moje_dane_bazy:/var/lib/postgresql/data
+
+  web:
+    build: .
+    restart: always
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - MODEL_URL=http://host.docker.internal:1234/v1
+      - API_KEY=${API_KEY}
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL}
+      - CHAT_MODEL=${CHAT_MODEL}
